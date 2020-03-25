@@ -1,6 +1,8 @@
 const express = require('express')
 const router = express.Router()
 const Author = require('../models/author')
+const Book = require('../models/book')
+const mongoose = require('mongoose')
 
 //All authors route
 router.get('/', async (req, res) => {
@@ -40,6 +42,65 @@ router.post('/', async (req, res) => {
             errorMessage: 'Error creating Author'
         }
         res.render('authors/new', locals)
+    }
+})
+
+router.get('/:id', async (req, res) => {
+    try {
+        const author = await Author.findOne({_id: req.params.id})
+        const books = await Book.find({author: author.id})
+        res.render('authors/show', {
+            author: author,
+            booksByAuthor: books
+        })
+    } catch(err) {
+        //console.log(err)
+        res.redirect('/')
+    }
+})
+
+router.get('/:id/edit', async (req, res) => {
+    try {
+        const author = await Author.findOne({_id:req.params.id})
+        res.render('authors/edit', { author: author })
+    } catch {
+        res.redirect('/authors')
+    }
+    
+})
+
+router.put('/:id', async (req, res) => {
+    let author
+    try {
+        author = await Author.findOne({_id: req.params.id})
+        author.name = req.body.name
+        const newAuthor = await author.save()
+        res.redirect(`/authors/${newAuthor.id}`)
+    } catch {
+        if(author == null) {
+            res.redirect('/')
+        } else {
+            let locals = {
+                author: author,
+                errorMessage: 'Error updating Author'
+            }
+            res.render('authors/edit', locals)
+        }
+    }
+}) 
+
+router.delete('/:id', async (req, res) => {
+    let author
+    try {
+        author = await Author.findOne({_id: req.params.id})
+        await author.remove()
+        res.redirect(`/authors`)
+    } catch {
+        if(author == null) {
+            res.redirect('/')
+        } else {
+            res.redirect(`/authors/${author.id}`)
+        }
     }
 })
 
