@@ -28,7 +28,7 @@ router.get('/', async (req, res) => {
 
 //New Book Route
 router.get('/new', async (req, res) => {
-    renderFormPage(res, 'books/new', new Book())
+    renderFormPage(res, new Book(), 'books/new')
 })
 
 //Create Book route
@@ -124,8 +124,9 @@ async function renderFormPage(res, book, form, hasError = false) {
             } else
                 params.errorMessage = 'Error Creating Book'
         }
-        res.render(`${form}`, params)
-    } catch {
+        res.render(form, params)
+    } catch(err) {
+        console.log(err)
         res.redirect('/books')
     }
 }
